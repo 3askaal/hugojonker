@@ -1,6 +1,7 @@
 <template>
-  <div class="gallery">
-    <div class="gallery__item" v-for="(image, imageIndex) of images" :key="imageIndex">
+  <div class="gallery" v-masonry transition-duration="1s" gutter=".gallery__gutter">
+    <div class="gallery__item" v-masonry-tile v-for="(image, imageIndex) of images" :key="imageIndex">
+      <div class="gallery__gutter" />
       <img :src="image" />
     </div>
   </div>
@@ -15,32 +16,32 @@ export default {
     }
   },
 }
-</script>>
+</script>
 
 <style lang="scss" scoped>
 .gallery {
-  display: flex;
-	flex-direction: column;
-	flex-wrap: wrap;
-  align-content: stretch;
-  align-items: stretch;
-  width: 100%;
-  height: 100vw;
   overflow: hidden;
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+}
+
+.gallery__gutter {
+  width: 1rem;
+  display: block;
 }
 
 .gallery__item {
+  max-width: calc(25% - 1rem);
   flex: 0 1 auto;
-  overflow: hidden;
-  width: 200px;
-  overflow: hidden;
-  border: 1px solid $purple;
+  object-fit: cover;
+  object-position: center center;
+  margin-bottom: 1rem;
 
   img {
     display: block;
-    // width: 100%;
+    width: 100%;
   }
 }
 </style>

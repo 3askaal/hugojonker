@@ -1,7 +1,9 @@
 <template>
   <div class="app">
     <Header />
-    <Nuxt />
+    <div class="container">
+      <Nuxt />
+    </div>
   </div>
 </template>
 
@@ -21,6 +23,11 @@ body,
 }
 
 .app {
-  border: 1px solid $red;
+  // border: 1px solid $red;
+}
+
+.container {
+  max-width: 1200px;
+  padding: 0 2rem;
 }
 </style>

@@ -12,7 +12,25 @@
 <style lang="scss" scoped>
 .header {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   padding: $spacer * 2;
+}
+
+.header__logo {
+  font-family: $font-logo;
+  font-size: 2.2rem;
+  // margin-bottom: 2rem;
+}
+
+.header__nav {
+  display: none;
+}
+
+.header__nav__item {
+  +.header__nav__item {
+    margin-left: 1rem;
+  }
 }
 </style>
