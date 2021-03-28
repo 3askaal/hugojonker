@@ -33,7 +33,7 @@ export default {
 }
 
 .gallery__item {
-  max-width: calc(25% - 1rem);
+  max-width: calc(33.33% - 1rem);
   flex: 0 1 auto;
   object-fit: cover;
   object-position: center center;
