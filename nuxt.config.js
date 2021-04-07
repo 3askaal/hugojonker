@@ -23,6 +23,7 @@ export default {
     '~/style/global.scss',
     'normalize.css/normalize.css',
     'reset-css/reset.css',
+    // '~/assets/fonts/fonts.css',
   ],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins

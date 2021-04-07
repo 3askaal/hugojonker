@@ -1,5 +1,5 @@
 <template>
-  <Gallery :images="images" />
+  <Gallery :items="items" />
 </template>
 
 <script>
@@ -8,8 +8,12 @@ import { random, times, sample } from 'lodash'
 export default {
   data() {
     return {
-      images: times(20, () => {
-        return `https://placeimg.com/${random(sample([1000, 2000]), sample([1000, 2000]))}/${random(sample([1000, 2000]), sample([1000, 2000]))}/any`
+      items: times(20, () => {
+        return {
+          title: 'Lorem ipsum',
+          content: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Assumenda ipsa quidem voluptas optio accusamus voluptate facilis hic a sapiente excepturi iure, explicabo architecto nostrum magnam velit neque deleniti inventore magni.',
+          image: `https://placeimg.com/${random(sample([1000, 2000]), sample([1000, 2000]))}/${random(sample([1000, 2000]), sample([1000, 2000]))}/any`
+        }
       })
     }
   }
