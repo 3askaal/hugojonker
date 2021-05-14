@@ -1,9 +1,12 @@
 <template>
-  <div class="gallery" v-masonry transition-duration="1s" gutter=".gallery__gutter">
+  <div class="gallery">
     <nuxt-link class="gallery__item" v-masonry-tile v-for="(item, itemIndex) of items" :to="`/projects/${item.slug}`" :key="imageIndex">
-      <div class="gallery__gutter" />
-      <div class="gallery__item__title">{{ item.title }}</div>
-      <img :src="item.image" />
+      <!-- <div class="gallery__gutter" /> -->
+      <!-- <div class="gallery__item__title">{{ item.title }}</div> -->
+      <div class="gallery__item__wrap">
+        <img class="gallery__item__image" :src="item.image" />
+        <img class="gallery__item__overlay" :src="item.image" />
+      </div>
     </nuxt-link>
   </div>
 </template>
@@ -27,12 +30,11 @@ export default {
   overflow: hidden;
   max-width: 1200px;
   margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-
+  column-count: 4;
+  column-gap: 1rem;
 
   &:hover {
-    img {
+    .gallery__item__image {
       opacity: 0;
     }
   }
@@ -45,49 +47,50 @@ export default {
 
 .gallery__item {
   position: relative;
-  max-width: calc(25% - 1rem);
-  flex: 0 1 auto;
+  display: block;
+  max-height: 500px;
+  margin-bottom: 1rem;
   object-fit: cover;
   object-position: center center;
-  margin-bottom: 0.1rem;
   cursor: pointer;
   z-index: 100;
 
-  img {
-    display: block;
-    width: 100%;
-  }
-
-  &:before {
-    content: '';
-    position: absolute;
-    display: block;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    box-shadow: 0 0 0 0.1rem $white;
+  .gallery__item__wrap {
+    box-shadow: 0 0 0 1rem $white;
   }
 
   &:hover {
-    position: absolute;
-    width: 100%;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    max-width: 100%;
-    z-index: 0;
-    transition: all .4s ease;
+    position: static;
 
-    img {
-      opacity: 1;
+    .gallery__item__overlay {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      width: 100%;
+      transition: all .4s ease;
     }
+
+    // img {
+    //   opacity: 1;
+    //   pointer-events: none;
+    // }
 
     .gallery__item__title {
       opacity: 1 !important;
     }
   }
+}
+
+.gallery__item__image {
+  display: block;
+  width: 100%;
+}
+
+.gallery__item__overlay {
+  display: none;
 }
 
 .gallery__item__title {

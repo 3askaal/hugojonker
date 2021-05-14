@@ -12,7 +12,7 @@ export default {
         return {
           title: 'Lorem ipsum',
           content: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Assumenda ipsa quidem voluptas optio accusamus voluptate facilis hic a sapiente excepturi iure, explicabo architecto nostrum magnam velit neque deleniti inventore magni.',
-          image: `https://placeimg.com/${random(sample([1000, 2000]), sample([1000, 2000]))}/${random(sample([1000, 2000]), sample([1000, 2000]))}/any`
+          image: `https://placeimg.com/${random(sample([500, 1000]), sample([500, 1000]))}/${random(sample([500, 1000]), sample([500, 1000]))}/any`
         }
       })
     }
