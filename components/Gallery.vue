@@ -1,8 +1,6 @@
 <template>
   <div class="gallery">
-    <nuxt-link class="gallery__item" v-masonry-tile v-for="(item, itemIndex) of items" :to="`/projects/${item.slug}`" :key="imageIndex">
-      <!-- <div class="gallery__gutter" /> -->
-      <!-- <div class="gallery__item__title">{{ item.title }}</div> -->
+    <nuxt-link class="gallery__item" v-for="(item, itemIndex) of items" :to="`/projects/${item.slug}`" :key="itemIndex">
       <div class="gallery__item__wrap">
         <img class="gallery__item__image" :src="item.image" />
         <img class="gallery__item__overlay" :src="item.image" />
@@ -26,12 +24,13 @@ export default {
 
 <style lang="scss" scoped>
 .gallery {
-  position: relative;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
   max-width: 1200px;
-  margin: 0 auto;
-  column-count: 4;
-  column-gap: 1rem;
+  max-height: 1200px;
+  overflow: hidden;
+  // margin: 0 auto;
 
   &:hover {
     .gallery__item__image {
@@ -40,16 +39,13 @@ export default {
   }
 }
 
-.gallery__gutter {
-  width: 0.1rem;
-  display: block;
-}
-
 .gallery__item {
-  position: relative;
-  display: block;
-  max-height: 500px;
-  margin-bottom: 1rem;
+  flex: 1;
+  max-width: calc(25% - 1rem);
+  margin: 0.5rem;
+  // display: block;
+  // max-height: 500px;
+  // margin-bottom: 1rem;
   object-fit: cover;
   object-position: center center;
   cursor: pointer;

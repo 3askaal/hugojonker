@@ -24,6 +24,9 @@ body,
 
 .app {
   // border: 1px solid $red;
+  display: flex;
+  flex-direction: column;
+  max-height: 100vh;
 }
 
 .container {
