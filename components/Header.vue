@@ -20,7 +20,7 @@
 
 .header__logo {
   font-family: $font-logo;
-  font-size: 2.2rem;
+  font-size: 3rem;
   // margin-bottom: 2rem;
 }
 

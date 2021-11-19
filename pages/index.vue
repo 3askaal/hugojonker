@@ -3,18 +3,28 @@
 </template>
 
 <script>
-import { random, times, sample } from 'lodash'
+import { random, times } from 'lodash'
+import * as randomColor from 'random-hex-color'
 
 export default {
   data() {
     return {
+      gallerySpace: 400,
       items: times(20, () => {
         return {
           title: 'Lorem ipsum',
           content: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Assumenda ipsa quidem voluptas optio accusamus voluptate facilis hic a sapiente excepturi iure, explicabo architecto nostrum magnam velit neque deleniti inventore magni.',
-          image: `https://placeimg.com/${random(sample([500, 1000]), sample([500, 1000]))}/${random(sample([500, 1000]), sample([500, 1000]))}/any`
+          image: this.getPlaceholderImageUrl()
         }
       })
+    }
+  },
+  methods: {
+    getPlaceholderImageUrl() {
+      const color = randomColor()
+      const x = random(200, 600)
+      const y = random(200, 400)
+      return `https://via.placeholder.com/${x}x${y}/${color.slice(1)}`
     }
   }
 }

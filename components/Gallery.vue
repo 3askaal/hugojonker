@@ -1,9 +1,25 @@
 <template>
-  <div class="gallery">
+  <div class="gallery" ref="gallery">
     <nuxt-link class="gallery__item" v-for="(item, itemIndex) of items" :to="`/projects/${item.slug}`" :key="itemIndex">
-      <div class="gallery__item__wrap">
+      <div class="gallery__item__wrap"
+        @mouseenter="() => mouseOver(itemIndex)"
+        @mouseleave="() => mouseOver(null)"
+      >
         <img class="gallery__item__image" :src="item.image" />
-        <img class="gallery__item__overlay" :src="item.image" />
+        <div class="gallery__item__overlay"
+          ref="overlays"
+          :style="{
+            ...isHovering === itemIndex && {
+              width: `${galleryWidth}px`,
+              height: `${galleryHeight}px`
+            },
+            transform: isHovering === itemIndex ?
+              `translate(-${items[itemIndex].left}px, -${items[itemIndex].top}px)` :
+              null
+          }"
+        >
+          <img :src="item.image" />
+        </div>
       </div>
     </nuxt-link>
   </div>
@@ -19,16 +35,62 @@ export default {
       default: []
     }
   },
+  data() {
+    return {
+      isHovering: null,
+      galleryWidth: null,
+      galleryheight: null,
+      gallerySpace: 400
+    }
+  },
+  mounted() {
+    setTimeout(() => {
+      const gallery = this.$refs.gallery
+      const galleryLeft = gallery.getBoundingClientRect().left
+      const galleryTop = gallery.getBoundingClientRect().top
+      this.galleryWidth = gallery.getBoundingClientRect().width
+      this.galleryHeight = gallery.getBoundingClientRect().height
+
+      this.$refs.overlays.forEach((ref, index) => {
+        console.log(ref)
+        const left = ref.getBoundingClientRect().left - galleryLeft
+        const top = ref.getBoundingClientRect().top - galleryTop
+        const width = ref.getBoundingClientRect().width
+        const height = ref.getBoundingClientRect().height
+
+        console.log(index, top + 'px')
+
+        this.$props.items[index].left = left
+        this.$props.items[index].top = top
+        this.$props.items[index].width = width
+        this.$props.items[index].height = height
+
+        console.log(
+          left,
+          top,
+          width,
+          // galleryWidth,
+        )
+      })
+    }, 1500)
+  },
+  methods: {
+    mouseOver(index) {
+      this.isHovering = index
+    }
+  }
 }
 </script>
 
 <style lang="scss" scoped>
 .gallery {
+  position: relative;
   display: flex;
   flex-direction: column;
   flex-wrap: wrap;
-  max-width: 1200px;
-  max-height: 1200px;
+  margin: 0 auto;
+  max-width: 600px;
+  max-height: 600px;
   overflow: hidden;
   // margin: 0 auto;
 
@@ -40,39 +102,40 @@ export default {
 }
 
 .gallery__item {
-  flex: 1;
-  max-width: calc(25% - 1rem);
-  margin: 0.5rem;
+  position: relative;
+  display: block;
+  max-width: calc(25% - .25rem);
+  height: 25%;
+  margin: 0.125rem;
   // display: block;
   // max-height: 500px;
   // margin-bottom: 1rem;
-  object-fit: cover;
-  object-position: center center;
   cursor: pointer;
   z-index: 100;
 
   .gallery__item__wrap {
-    box-shadow: 0 0 0 1rem $white;
+    position: relative;
+    box-shadow: 0 0 0 .25rem $black;
   }
 
   &:hover {
-    position: static;
+    z-index: 0;
 
-    .gallery__item__overlay {
-      display: block;
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      width: 100%;
-      transition: all .4s ease;
+    .gallery__item__wrap {
+      position: static;
     }
 
-    // img {
-    //   opacity: 1;
-    //   pointer-events: none;
-    // }
+    .gallery__item__overlay {
+      // display: block;
+      display: block;
+      opacity: 1;
+      z-index: -1;
+    }
+
+    img {
+      opacity: 1;
+      pointer-events: none;
+    }
 
     .gallery__item__title {
       opacity: 1 !important;
@@ -86,7 +149,22 @@ export default {
 }
 
 .gallery__item__overlay {
-  display: none;
+  // display: none;
+  opacity: 0;
+  display: block;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  transition: transform .5s ease, width .5s ease, height .5s ease;
+
+  img {
+    object-fit: cover;
+    object-position: center center;
+    width: 100%;
+    height: 100%;
+  }
 }
 
 .gallery__item__title {

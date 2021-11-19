@@ -14,6 +14,7 @@
     "core-js": "^3.8.3",
     "normalize.css": "^8.0.1",
     "nuxt": "^2.14.12",
+    "random-hex-color": "^1.0.1",
     "reset-css": "^5.0.1",
     "vue-masonry": "^0.12.0"
   },
