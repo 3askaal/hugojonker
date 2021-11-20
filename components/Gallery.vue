@@ -1,27 +1,29 @@
 <template>
-  <div class="gallery" ref="gallery">
-    <nuxt-link class="gallery__item" v-for="(item, itemIndex) of items" :to="`/projects/${item.slug}`" :key="itemIndex">
-      <div class="gallery__item__wrap"
-        @mouseenter="() => mouseOver(itemIndex)"
-        @mouseleave="() => mouseOver(null)"
-      >
-        <img class="gallery__item__image" :src="item.image" />
-        <div class="gallery__item__overlay"
-          ref="overlays"
-          :style="{
-            ...isHovering === itemIndex && {
-              width: `${galleryWidth}px`,
-              height: `${galleryHeight}px`
-            },
-            transform: isHovering === itemIndex ?
-              `translate(-${items[itemIndex].left}px, -${items[itemIndex].top}px)` :
-              null
-          }"
+  <div class="wrapper">
+    <div class="gallery" ref="gallery">
+      <nuxt-link class="gallery__item" v-for="(item, itemIndex) of items" :to="`/projects/${item.slug}`" :key="itemIndex">
+        <div class="gallery__item__wrap"
+          @mouseenter="() => mouseOver(itemIndex)"
+          @mouseleave="() => mouseOver(null)"
         >
-          <img :src="item.image" />
+          <img class="gallery__item__image" :src="item.image" />
+          <div class="gallery__item__overlay"
+            ref="overlays"
+            :style="{
+              ...isHovering === itemIndex && {
+                width: `${galleryWidth}px`,
+                height: `${galleryHeight}px`
+              },
+              transform: isHovering === itemIndex ?
+                `translate(-${items[itemIndex].left}px, -${items[itemIndex].top}px)` :
+                null
+            }"
+          >
+            <img :src="item.image" />
+          </div>
         </div>
-      </div>
-    </nuxt-link>
+      </nuxt-link>
+    </div>
   </div>
 </template>
 
@@ -52,7 +54,6 @@ export default {
       this.galleryHeight = gallery.getBoundingClientRect().height
 
       this.$refs.overlays.forEach((ref, index) => {
-        console.log(ref)
         const left = ref.getBoundingClientRect().left - galleryLeft
         const top = ref.getBoundingClientRect().top - galleryTop
         const width = ref.getBoundingClientRect().width
@@ -83,14 +84,21 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.gallery {
+.wrapper {
   position: relative;
+  display: block;
+  max-height: 600px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.gallery {
   display: flex;
   flex-direction: column;
   flex-wrap: wrap;
   margin: 0 auto;
   max-width: 600px;
-  max-height: 600px;
+  max-height: 800px;
   overflow: hidden;
   // margin: 0 auto;
 
@@ -107,9 +115,6 @@ export default {
   max-width: calc(25% - .25rem);
   height: 25%;
   margin: 0.125rem;
-  // display: block;
-  // max-height: 500px;
-  // margin-bottom: 1rem;
   cursor: pointer;
   z-index: 100;
 
@@ -126,7 +131,6 @@ export default {
     }
 
     .gallery__item__overlay {
-      // display: block;
       display: block;
       opacity: 1;
       z-index: -1;

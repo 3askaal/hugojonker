@@ -10,7 +10,7 @@ export default {
   data() {
     return {
       gallerySpace: 400,
-      items: times(20, () => {
+      items: times(40, () => {
         return {
           title: 'Lorem ipsum',
           content: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Assumenda ipsa quidem voluptas optio accusamus voluptate facilis hic a sapiente excepturi iure, explicabo architecto nostrum magnam velit neque deleniti inventore magni.',
