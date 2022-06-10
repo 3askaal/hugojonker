@@ -1,7 +1,25 @@
 <template>
   <div class="wrapper">
     <div class="gallery" ref="gallery">
-      <nuxt-link class="gallery__item" v-for="(item, itemIndex) of items" :to="`/projects/${item.slug}`" :key="itemIndex">
+      <div class="gallery__logo" ref="logo">Hugo Jonker</div>
+      <div
+        v-for="(images, index) in cols"
+        :key="`col-${index}`"
+        :ref="`col${index}`"
+        class="gallery__col"
+      >
+        <img
+          v-for="image in images"
+          :src="image.src"
+          :key="`image-${image.src}`"
+          :style="{
+            top: `${image.top}px`,
+          }"
+          class="gallery__col__image"
+        />
+            <!-- opacity: image.hide && .2 -->
+      </div>
+      <!-- <nuxt-link class="gallery__item" v-for="(item, itemIndex) of items" :to="`/projects/${item.slug}`" :key="itemIndex">
         <div class="gallery__item__wrap"
           @mouseenter="() => mouseOver(itemIndex)"
           @mouseleave="() => mouseOver(null)"
@@ -23,12 +41,36 @@
           </div>
         </div>
       </nuxt-link>
+    </div> -->
     </div>
   </div>
 </template>
 
 <script>
-import {} from 'lodash'
+import { random, times, sampleSize } from 'lodash'
+
+const elementsHit = (el1, el2) => {
+  el1.offsetBottom = (el1.offsetTop || el1.top) + (el1.offsetHeight || el1.height);
+  el1.offsetRight = (el1.offsetLeft || el1.left) + (el1.offsetWidth || el1.width);
+  el2.offsetBottom = (el2.offsetTop || el2.top) + (el2.offsetHeight || el2.height);
+  el2.offsetRight = (el2.offsetLeft || el2.left) + (el2.offsetWidth || el2.width);
+
+  return !(
+    (el1.offsetBottom < (el2.offsetTop || el2.top)) ||
+    ((el1.offsetTop || el1.top) > el2.offsetBottom) ||
+    (el1.offsetRight < (el2.offsetLeft || el2.left)) ||
+    ((el1.offsetLeft || el1.left) > el2.offsetRight)
+  )
+}
+
+const getImage = (src) => {
+  return new Promise((resolve, reject) => {
+    let img = new Image()
+    img.onload = () => resolve(img)
+    img.onerror = reject
+    img.src = src
+  })
+}
 
 export default {
   props: {
@@ -39,45 +81,90 @@ export default {
   },
   data() {
     return {
-      isHovering: null,
-      galleryWidth: null,
-      galleryheight: null,
-      gallerySpace: 400
+      cols: [[], [], [], []]
     }
   },
-  mounted() {
-    setTimeout(() => {
-      const gallery = this.$refs.gallery
-      const galleryLeft = gallery.getBoundingClientRect().left
-      const galleryTop = gallery.getBoundingClientRect().top
-      this.galleryWidth = gallery.getBoundingClientRect().width
-      this.galleryHeight = gallery.getBoundingClientRect().height
+  async mounted() {
+    this.cols = await this.generate()
+    // setTimeout(() => {
+    //   const gallery = this.$refs.gallery
+    //   const galleryLeft = gallery.getBoundingClientRect().left
+    //   const galleryTop = gallery.getBoundingClientRect().top
+    //   this.galleryWidth = gallery.getBoundingClientRect().width
+    //   this.galleryHeight = gallery.getBoundingClientRect().height
 
-      this.$refs.overlays.forEach((ref, index) => {
-        const left = ref.getBoundingClientRect().left - galleryLeft
-        const top = ref.getBoundingClientRect().top - galleryTop
-        const width = ref.getBoundingClientRect().width
-        const height = ref.getBoundingClientRect().height
+    //   this.$refs.overlays.forEach((ref, index) => {
+    //     const left = ref.getBoundingClientRect().left - galleryLeft
+    //     const top = ref.getBoundingClientRect().top - galleryTop
+    //     const width = ref.getBoundingClientRect().width
+    //     const height = ref.getBoundingClientRect().height
 
-        console.log(index, top + 'px')
+    //     console.log(index, top + 'px')
 
-        this.$props.items[index].left = left
-        this.$props.items[index].top = top
-        this.$props.items[index].width = width
-        this.$props.items[index].height = height
+    //     this.$props.items[index].left = left
+    //     this.$props.items[index].top = top
+    //     this.$props.items[index].width = width
+    //     this.$props.items[index].height = height
 
-        console.log(
-          left,
-          top,
-          width,
-          // galleryWidth,
-        )
-      })
-    }, 1500)
+    //     console.log(
+    //       left,
+    //       top,
+    //       width,
+    //     )
+    //   })
+    // }, 1500)
   },
   methods: {
     mouseOver(index) {
       this.isHovering = index
+    },
+    async generate() {
+      const amountCols = 4;
+      const gutter = 16
+
+      const logo = this.$refs.logo
+
+      const cols = await Promise.all(times(amountCols, async (index) => {
+        const colEl = this.$refs[`col${index}`][0];
+        const colElWidth = colEl.getBoundingClientRect().width
+        const colElLeft = colEl.getBoundingClientRect().left
+
+        const colHitsLogo = elementsHit(colEl, logo)
+
+        let currentTop = random(-20, -100);
+
+        return await Promise.all(sampleSize(this.items, this.items.length / amountCols)
+          .map(async (item) => {
+            const image = await getImage(item.src)
+            const imgWidth = Math.floor((colElWidth / image.width) / image.width)
+            const imgHeight = Math.floor((colElWidth / image.width) * image.height)
+            let imgTop = currentTop
+
+            image.width = imgWidth
+            image.height = imgHeight
+            image.left = Math.floor(colElLeft)
+            image.top = Math.floor(imgTop)
+
+            const imageHitsLogo = colHitsLogo && elementsHit(image, logo)
+
+            if (imageHitsLogo) {
+              const logoHeight = logo.getBoundingClientRect().height
+              const randomSpacing = 20
+              imgTop = logo.offsetTop + logoHeight + randomSpacing
+              currentTop = logo.offsetTop + logoHeight + randomSpacing
+            }
+
+            currentTop += imgHeight + gutter
+
+            return {
+              ...item,
+              top: Math.floor(imgTop),
+              hide: imageHitsLogo
+            }
+          }))
+      }));
+
+      return cols;
     }
   }
 }
@@ -87,29 +174,48 @@ export default {
 .wrapper {
   position: relative;
   display: block;
-  max-height: 600px;
+  /* max-height: 100vh; */
   width: 100%;
   overflow: hidden;
 }
 
 .gallery {
   display: flex;
-  flex-direction: column;
   flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
   margin: 0 auto;
-  max-width: 600px;
-  max-height: 800px;
+  max-width: 800px;
+  height: 120vh;
   overflow: hidden;
-  // margin: 0 auto;
-
-  &:hover {
-    .gallery__item__image {
-      opacity: 0;
-    }
-  }
 }
 
-.gallery__item {
+.gallery__logo {
+  position: absolute;
+  display: flex;
+  top: 200px;
+  align-items: center;
+  justify-content: center;
+  font-family: $font-logo;
+  font-size: 3rem;
+  line-height: 1;
+  padding: 1rem;
+  z-index: 9999;
+}
+
+.gallery__col {
+  position: relative;
+  flex: 1 0 calc(25% - 1rem);
+  margin: 0 .5rem;
+  height: 100%;
+}
+
+.gallery__col__image {
+  position: absolute;
+  width: 100%;
+}
+
+/* .gallery__item {
   position: relative;
   display: block;
   max-width: calc(25% - .25rem);
@@ -179,5 +285,5 @@ export default {
   left: 0;
   right: 0;
   opacity: 0;
-}
+} */
 </style>

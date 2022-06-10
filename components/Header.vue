@@ -1,6 +1,6 @@
 <template>
   <div class="header">
-    <div class="header__logo">Hugo Jonker</div>
+    <!-- <div class="header__logo" ref="logo">Hugo Jonker</div> -->
     <div class="header__nav">
       <a href="/" class="header__nav__item">Home</a>
       <a href="/portfolio" class="header__nav__item">Portfolio</a>
@@ -9,19 +9,41 @@
   </div>
 </template>
 
+
+<script>
+export default {
+  props: {
+    items: {
+      type: Array,
+      default: () => []
+    }
+  },
+  data() {
+    return {
+      isHovering: null,
+      galleryWidth: null,
+      galleryheight: null,
+      gallerySpace: 400
+    }
+  },
+  mounted() {
+    if (Object.keys(this.$refs).length) {
+      this.$store.commit('refs/add', this.$refs);
+    }
+  }
+}
+</script>
+
+
 <style lang="scss" scoped>
 .header {
+  position: absolute;
   display: flex;
-  flex-direction: column;
+  width: 100%;
   justify-content: center;
-  align-items: center;
   padding: $spacer * 2;
-}
-
-.header__logo {
-  font-family: $font-logo;
-  font-size: 3rem;
-  // margin-bottom: 2rem;
+  z-index: 9999;
+  pointer-events: none;
 }
 
 .header__nav {
