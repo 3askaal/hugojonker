@@ -24,8 +24,8 @@ export default {
       const color = randomColor()
       const x = random(200, 600)
       const y = random(200, 300)
-      return `https://placeimg.com/${x}/${y}/${sample(['arch', 'nature'])}`
-      // return `https://via.placeholder.com/${x}x${y}/${color.slice(1)}`
+      // return `https://placeimg.com/${x}/${y}/${sample(['arch', 'nature'])}`
+      return `https://via.placeholder.com/${x}x${y}/${color.slice(1)}`
     }
   }
 }
