@@ -23,7 +23,7 @@ export default {
     getPlaceholderImageUrl() {
       const color = randomColor()
       const x = random(200, 600)
-      const y = random(200, 400)
+      const y = random(200, 300)
       return `https://via.placeholder.com/${x}x${y}/${color.slice(1)}`
     }
   }
