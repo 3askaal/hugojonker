@@ -25,14 +25,21 @@
           }"
           class="gallery__col__image"
         />
-        <div class="gallery__col__image gallery__col__image--placeholder" />
+        <div
+          v-if="col.colBottom"
+          class="gallery__col__image gallery__col__image--placeholder"
+          :style="{
+            top: `${col.colBottom}px`,
+            height: '200px'
+          }"
+        />
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { random, times, sampleSize, sortBy } from 'lodash'
+import { random, times, sampleSize, chunk, sortBy } from 'lodash'
 
 const elementsHit = (el1, el2) => {
   el1.offsetBottom = (el1.offsetTop || el1.top) + (el1.offsetHeight || el1.height);
@@ -72,7 +79,7 @@ export default {
     }
   },
   async mounted() {
-    this.cols = await this.generate()
+    this.cols = await this.generate(this.items)
   },
   methods: {
     mouseOver(index) {
@@ -83,6 +90,9 @@ export default {
       const logoHeight = logo.getBoundingClientRect().height
       const logoTop = logo.getBoundingClientRect().top
 
+
+      const colImages = chunk(this.items, this.items.length / this.colAmount)
+
       const cols = await Promise.all(times(this.amountCols, async (index) => {
         const colEl = this.$refs[`col${index}`][0];
         const colElWidth = colEl.getBoundingClientRect().width
@@ -91,6 +101,7 @@ export default {
         const colHitsLogo = elementsHit(colEl, logo)
 
         let colMargin = 0
+        let colBottom = 0
         let hitsAtIndex = 0
         let currentTop = random(50, 100);
 
@@ -109,31 +120,39 @@ export default {
             image.top = Math.floor(imgTop)
 
             const imageHitsLogo = colHitsLogo && elementsHit(image, logo)
+            const imageHitsBottom = imgTop + image.height > (window.innerHeight - 50)
 
             if (imageHitsLogo) {
-              const randomSpacing = 0
-              imgTop = logo.offsetTop + logoHeight + this.gutter
-              currentTop = logo.offsetTop + logoHeight + this.gutter
+              imgTop = logo.offsetTop + logoHeight + this.gutter + random(0, 20)
+              currentTop = imgTop
 
-              colMargin = logoTop - imageTop
+              colMargin = logoTop - imageTop - random(0, 20)
 
               hitsAtIndex = index
             }
 
-            currentTop += imgHeight + this.gutter
+
+
+            if (imageHitsBottom) {
+              colBottom = currentTop
+            } else {
+              currentTop += imgHeight + this.gutter
+            }
 
             return {
               ...item,
               top: Math.floor(imgTop),
-              hide: imageHitsLogo
+              hide: imageHitsLogo,
+              imageHitsBottom,
             }
           })
         )
 
         return {
-          items: sortBy(items, ['top', 'desc']),
+          items: sortBy(items, ['top', 'desc']).filter(({imageHitsBottom}) => !imageHitsBottom),
           colMargin,
           colLogoTop: logo.offsetTop,
+          colBottom,
           hitsAtIndex
         }
       }));
@@ -159,7 +178,7 @@ export default {
   justify-content: center;
   margin: 0 auto;
   max-width: 800px;
-  height: 120vh;
+  height: 100vh;
   overflow: hidden;
 }
 
@@ -197,77 +216,4 @@ export default {
     opacity: .25;
   }
 }
-
-
-/* .gallery__item {
-  position: relative;
-  display: block;
-  max-width: calc(25% - .25rem);
-  height: 25%;
-  margin: 0.125rem;
-  cursor: pointer;
-  z-index: 100;
-
-  .gallery__item__wrap {
-    position: relative;
-    box-shadow: 0 0 0 .25rem $black;
-  }
-
-  &:hover {
-    z-index: 0;
-
-    .gallery__item__wrap {
-      position: static;
-    }
-
-    .gallery__item__overlay {
-      display: block;
-      opacity: 1;
-      z-index: -1;
-    }
-
-    img {
-      opacity: 1;
-      pointer-events: none;
-    }
-
-    .gallery__item__title {
-      opacity: 1 !important;
-    }
-  }
-}
-
-.gallery__item__image {
-  display: block;
-  width: 100%;
-}
-
-.gallery__item__overlay {
-  // display: none;
-  opacity: 0;
-  display: block;
-  position: absolute;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  transition: transform .5s ease, width .5s ease, height .5s ease;
-
-  img {
-    object-fit: cover;
-    object-position: center center;
-    width: 100%;
-    height: 100%;
-  }
-}
-
-.gallery__item__title {
-  background-color: $white;
-  padding: 1rem;
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  opacity: 0;
-} */
 </style>
