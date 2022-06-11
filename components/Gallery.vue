@@ -149,7 +149,7 @@ export default {
 
             if (imageHitsLogo) {
               const logoHeight = logo.getBoundingClientRect().height
-              const randomSpacing = 20
+              const randomSpacing = random(20, 100)
               imgTop = logo.offsetTop + logoHeight + randomSpacing
               currentTop = logo.offsetTop + logoHeight + randomSpacing
             }
