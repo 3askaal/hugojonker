@@ -113,10 +113,10 @@ export default {
     await this.generate()
   },
   created() {
-    window.addEventListener("resize", throttle(this.generate, 500));
+    window.addEventListener("resize", throttle(this.generate, 200));
   },
   destroyed() {
-    window.removeEventListener("resize", throttle(this.generate, 500));
+    window.removeEventListener("resize", throttle(this.generate, 200));
   },
   methods: {
     mouseOver(index) {
@@ -183,10 +183,10 @@ export default {
 
             if (imageHitsLogo) {
               console.log(imageHitsLogo)
-              imgTop = logoTop + logoHeight + this.gutter + random(0, 20)
+              imgTop = logoTop + logoHeight + this.gutter + random(0, 10)
               currentTop = imgTop
 
-              colMargin = Math.floor(logoTop - imageTop - random(0, 20))
+              colMargin = Math.floor(logoTop - imageTop - random(0, 10))
 
               hitsAtIndex = index
             }
@@ -261,14 +261,24 @@ export default {
 .gallery__col__image {
   position: absolute;
   width: 100%;
-  border-radius: .25rem;
+  border-radius: .125rem;
   overflow: hidden;
+  opacity: .5;
+  transition: all .25s ease;
 
   &--placeholder {
     background-color: #51557E;
     width: 100%;
     top: -100px;
     opacity: .25;
+  }
+
+  &:not(.gallery__col__image--placeholder) {
+    cursor: pointer;
+
+    &:hover {
+      opacity: 1;
+    }
   }
 }
 </style>
