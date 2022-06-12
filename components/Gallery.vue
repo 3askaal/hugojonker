@@ -15,7 +15,7 @@
           v-if="col.items && col.items.length"
           class="gallery__col__image gallery__col__image--placeholder"
           :style="{
-            height: `${col.items[0].top - gutter + 100 + (col.colMargin || 0)}px`
+            height: `${col.items[0].top - gutter + 100 + (col.top || 0)}px`
           }"
         />
         <img
@@ -24,15 +24,15 @@
           :key="`image-${image.src}`"
           :style="{
             top: `${image.top}px`,
-            transform: image.top < col.colLogoTop && `translateY(${col.colMargin}px)`
+            transform: image.top < logoTop && `translateY(${col.top}px)`
           }"
           class="gallery__col__image"
         />
         <div
-          v-if="col.colBottom"
+          v-if="col.bottom"
           class="gallery__col__image gallery__col__image--placeholder"
           :style="{
-            top: `${col.colBottom}px`,
+            top: `${col.bottom}px`,
             height: '200px'
           }"
         />
@@ -85,7 +85,8 @@ export default {
     return {
       amountCols,
       gutter: 16,
-      cols: []
+      cols: [],
+      logoTop: 0
     }
   },
   async mounted() {
@@ -103,7 +104,6 @@ export default {
     },
     async generate() {
       this.amountCols = this.calcColAmount()
-      // this.gutter = this.calcGutter()
       this.cols = times(this.amountCols, () => [])
 
       this.$nextTick(async () => {
@@ -111,7 +111,9 @@ export default {
       })
     },
     calcColAmount() {
-      return Math.floor((this.$refs.gallery?.getBoundingClientRect().width || 0) / 200);
+      const galleryWidth = this.$refs.gallery?.getBoundingClientRect().width || 0
+      const imageWidth = galleryWidth < 768 ? 180 : 200
+      return Math.floor(galleryWidth / imageWidth);
     },
     // calcGutter() {
     //   return
@@ -123,7 +125,7 @@ export default {
       if (!logo) return times(this.amountCols, () => []);
 
       const logoHeight = logo.getBoundingClientRect().height
-      const logoTop = logo.getBoundingClientRect().top
+      this.logoTop = logo.getBoundingClientRect().top
 
       const colImages = chunk(this.items, this.items.length / this.amountCols)
 
@@ -138,13 +140,13 @@ export default {
 
         const colHitsLogo = elementsHit(colEl, logo)
 
-        let colMargin = 0
+        let colTop = 0
         let colBottom = 0
         let currentTop = random(50, 70);
 
         const items = await Promise.all(
           sampleSize(this.items, this.items.length / this.amountCols)
-          .map(async (item, index) => {
+          .map(async (item) => {
             const image = await getImage(item.src)
             const imgWidth = Math.floor((colElWidth / image.width) * image.width)
             const imgHeight = Math.floor((colElWidth / image.width) * image.height)
@@ -160,9 +162,9 @@ export default {
             const imageHitsBottom = imgTop + image.height > (window.innerHeight - 50)
 
             if (imageHitsLogo) {
-              imgTop = logoTop + logoHeight + this.gutter + random(0, 10)
+              imgTop = this.logoTop + logoHeight + this.gutter + random(0, 10)
               currentTop = imgTop
-              colMargin = Math.floor(logoTop - imageTop - random(0, 10))
+              colTop = Math.floor(this.logoTop - imageTop - random(0, 10))
             }
 
             if (imageHitsBottom) {
@@ -182,9 +184,8 @@ export default {
 
         return {
           items: sortBy(items, ['top', 'desc']).filter(({imageHitsBottom}) => !imageHitsBottom),
-          colMargin,
-          colLogoTop: logo.offsetTop,
-          colBottom
+          top: colTop,
+          bottom: colBottom,
         }
       }));
 
