@@ -7,6 +7,9 @@
         :ref="`col${index}`"
         :key="`col-${index}`"
         class="gallery__col"
+        :style="{
+          flex: `1 0 calc(${100 / amountCols}% - 1rem)`
+        }"
       >
         <div
           v-if="col.items && col.items.length"
@@ -39,19 +42,45 @@
 </template>
 
 <script>
-import { random, times, sampleSize, chunk, sortBy } from 'lodash'
+import { random, times, sampleSize, chunk, sortBy, throttle } from 'lodash'
 
-const elementsHit = (el1, el2) => {
-  el1.offsetBottom = (el1.offsetTop || el1.top) + (el1.offsetHeight || el1.height);
-  el1.offsetRight = (el1.offsetLeft || el1.left) + (el1.offsetWidth || el1.width);
-  el2.offsetBottom = (el2.offsetTop || el2.top) + (el2.offsetHeight || el2.height);
-  el2.offsetRight = (el2.offsetLeft || el2.left) + (el2.offsetWidth || el2.width);
+const elementsHit = (el1, el2, colIndex) => {
+  const el1Top = (el1.offsetTop || el1.top || 0);
+  const el1Left = (el1.offsetLeft || el1.left || 0);
+  const el1Bottom = (el1.offsetTop || el1.top || 0) + (el1.offsetHeight || el1.height || 0);
+  const el1Right = (el1.offsetLeft || el1.left || 0) + (el1.offsetWidth || el1.width || 0);
+
+  const el2Top = (el2.offsetTop || el2.top || 0);
+  const el2left = (el2.offsetLeft || el2.left || 0);
+  const el2Bottom = (el2.offsetTop || el2.top || 0) + (el2.offsetHeight || el2.height || 0);
+  const el2Right = (el2.offsetLeft || el2.left || 0) + (el2.offsetWidth || el2.width || 0);
+
+  if (colIndex === 3) {
+    console.log('IMAGE')
+    // console.log('el1Top: ', el1Top)
+    console.log('left: ', el1Left)
+    // console.log('el1Bottom: ', el1Bottom)
+    // console.log('el1Right: ', el1Right)
+
+    console.log(' ')
+
+    console.log('LOGO')
+    // console.log('el2Top: ', el2Top)
+    // console.log('el2left: ', el2left)
+    // console.log('el2Bottom: ', el2Bottom)
+    console.log('right: ', el2Right)
+    console.log('width: ', el2.offsetWidth)
+
+    console.log('=================')
+    console.log(' ')
+    console.log(' ')
+  }
 
   return !(
-    (el1.offsetBottom < (el2.offsetTop || el2.top)) ||
-    ((el1.offsetTop || el1.top) > el2.offsetBottom) ||
-    (el1.offsetRight < (el2.offsetLeft || el2.left)) ||
-    ((el1.offsetLeft || el1.left) > el2.offsetRight)
+    (el1Bottom < el2Top) ||
+    (el1Top > el2Bottom) ||
+    (el1Right < el2left) ||
+    (el1Left > el2Right)
   )
 }
 
@@ -64,6 +93,8 @@ const getImage = (src) => {
   })
 }
 
+const amountCols = 4
+
 export default {
   props: {
     items: {
@@ -73,65 +104,92 @@ export default {
   },
   data() {
     return {
-      cols: [[], [], [], []],
-      amountCols: 4,
-      gutter: 16
+      amountCols,
+      gutter: 16,
+      cols: []
     }
   },
   async mounted() {
-    this.cols = await this.generate(this.items)
+    await this.generate()
+  },
+  created() {
+    window.addEventListener("resize", throttle(this.generate, 500));
+  },
+  destroyed() {
+    window.removeEventListener("resize", throttle(this.generate, 500));
   },
   methods: {
     mouseOver(index) {
       this.isHovering = index
     },
     async generate() {
+      this.amountCols = this.calcColAmount()
+      // this.gutter = this.calcGutter()
+      this.cols = times(this.amountCols, () => [])
+
+      this.$nextTick(async () => {
+        this.cols = await this.calcCols()
+      })
+    },
+    calcColAmount() {
+      return Math.floor((this.$refs.gallery?.getBoundingClientRect().width || 0) / 200);
+    },
+    // calcGutter() {
+    //   return
+    // },
+    async calcCols() {
+      const gallery = this.$refs.gallery
       const logo = this.$refs.logo
+
+      if (!logo) return times(this.amountCols, () => []);
+
       const logoHeight = logo.getBoundingClientRect().height
       const logoTop = logo.getBoundingClientRect().top
 
+      const colImages = chunk(this.items, this.items.length / this.amountCols)
 
-      const colImages = chunk(this.items, this.items.length / this.colAmount)
+      const cols = await Promise.all(times(this.amountCols, async (colIndex) => {
+        const colRef = this.$refs[`col${colIndex}`];
+        const colEl = colRef && colRef[0]
 
-      const cols = await Promise.all(times(this.amountCols, async (index) => {
-        const colEl = this.$refs[`col${index}`][0];
+        if (!colEl) return {}
+
         const colElWidth = colEl.getBoundingClientRect().width
-        const colElLeft = colEl.getBoundingClientRect().left
+        const colElLeft = colEl.getBoundingClientRect().left - gallery.getBoundingClientRect().left
 
         const colHitsLogo = elementsHit(colEl, logo)
 
         let colMargin = 0
         let colBottom = 0
         let hitsAtIndex = 0
-        let currentTop = random(50, 100);
+        let currentTop = random(50, 70);
 
         const items = await Promise.all(
           sampleSize(this.items, this.items.length / this.amountCols)
           .map(async (item, index) => {
             const image = await getImage(item.src)
-            const imgWidth = Math.floor((colElWidth / image.width) / image.width)
+            const imgWidth = Math.floor((colElWidth / image.width) * image.width)
             const imgHeight = Math.floor((colElWidth / image.width) * image.height)
             let imgTop = currentTop
             const imageTop = imgTop
 
             image.width = imgWidth
             image.height = imgHeight
-            image.left = Math.floor(colElLeft)
             image.top = Math.floor(imgTop)
+            image.left = Math.floor(colElLeft)
 
-            const imageHitsLogo = colHitsLogo && elementsHit(image, logo)
+            const imageHitsLogo = colHitsLogo && elementsHit(image, logo, colIndex)
             const imageHitsBottom = imgTop + image.height > (window.innerHeight - 50)
 
             if (imageHitsLogo) {
-              imgTop = logo.offsetTop + logoHeight + this.gutter + random(0, 20)
+              console.log(imageHitsLogo)
+              imgTop = logoTop + logoHeight + this.gutter + random(0, 20)
               currentTop = imgTop
 
-              colMargin = logoTop - imageTop - random(0, 20)
+              colMargin = Math.floor(logoTop - imageTop - random(0, 20))
 
               hitsAtIndex = index
             }
-
-
 
             if (imageHitsBottom) {
               colBottom = currentTop
@@ -177,19 +235,17 @@ export default {
   align-items: center;
   justify-content: center;
   margin: 0 auto;
-  max-width: 800px;
+  max-width: 1200px;
   height: 100vh;
   overflow: hidden;
 }
 
 .gallery__logo {
   position: absolute;
-  display: flex;
-  top: 400px;
   align-items: center;
   justify-content: center;
   font-family: $font-logo;
-  font-size: 3.6rem;
+  font-size: 2.5rem;
   line-height: 1;
   padding: 1rem;
   z-index: 9999;
@@ -197,7 +253,6 @@ export default {
 
 .gallery__col {
   position: relative;
-  flex: 1 0 calc(25% - 1rem);
   margin-left: .5rem;
   margin-right: .5rem;
   height: 100%;

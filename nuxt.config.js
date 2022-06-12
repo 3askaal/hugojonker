@@ -51,7 +51,9 @@ export default {
   styleResources: {
     scss: [
       '~/style/variables.scss',
-      'bootstrap/scss/bootstrap-reboot.scss',
+      '~/style/mixins.scss',
+      '~/style/functions.scss',
+      'bootstrap/scss/bootstrap.scss',
     ]
   }
 }
