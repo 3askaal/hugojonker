@@ -322,6 +322,7 @@ export default {
   &--placeholder {
     background-color: mix(#51557E, black, 40%);
     top: -100px;
+    border-radius: 0;
   }
 
   &:not(.gallery__col__image--placeholder) {
