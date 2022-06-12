@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import { random, times, sample } from 'lodash'
+import { random, times } from 'lodash'
 import * as randomColor from 'random-hex-color'
 
 export default {
@@ -24,8 +24,7 @@ export default {
       const color = randomColor()
       const x = random(800, 1600)
       const y = random(800, 1000)
-      return `https://picsum.photos/${x}/${y}`
-      // return `https://via.placeholder.com/${x}x${y}/${color.slice(1)}`
+      return `https://via.placeholder.com/${x}x${y}/${color.slice(1)}`
     }
   }
 }

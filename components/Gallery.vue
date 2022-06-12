@@ -155,6 +155,13 @@ export default {
       const gallery = this.$refs.gallery
       const logo = this.$refs.logo
 
+      this.logoArea = {
+        top: 0,
+        left: 0,
+        width: 0,
+        height: 0
+      }
+
       if (!logo) return times(this.amountCols, () => []);
 
       const logoHeight = logo.getBoundingClientRect().height
@@ -269,11 +276,11 @@ export default {
   align-items: center;
   justify-content: center;
   font-family: $font-logo;
-  font-size: 2.5rem;
+  font-size: 1.8rem;
   line-height: 1;
-  padding: 1rem;
+  padding: .5rem 1rem;
   z-index: 9999;
-  top: 30%;
+  top: 25%;
 }
 
 .gallery__box {
