@@ -22,10 +22,10 @@ export default {
   methods: {
     getPlaceholderImageUrl() {
       const color = randomColor()
-      const x = random(200, 600)
-      const y = random(200, 250)
-      // return `https://placeimg.com/${x}/${y}/${sample(['arch', 'nature'])}`
-      return `https://via.placeholder.com/${x}x${y}/${color.slice(1)}`
+      const x = random(800, 1600)
+      const y = random(800, 1000)
+      return `https://picsum.photos/${x}/${y}`
+      // return `https://via.placeholder.com/${x}x${y}/${color.slice(1)}`
     }
   }
 }

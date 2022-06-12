@@ -2,6 +2,18 @@
   <div class="wrapper">
     <div class="gallery" ref="gallery">
       <div class="gallery__logo" ref="logo">Hugo Jonker</div>
+      <div class="gallery__overlay" v-if="currentImageSrc">
+        <img :src="currentImageSrc" alt="" />
+      </div>
+      <div
+        class="gallery__box"
+        :style="{
+          top: `${logoArea.top}px`,
+          left: `${logoArea.left}px`,
+          width: `${logoArea.width}px`,
+          height: `${logoArea.height}px`,
+        }"
+      />
       <div
         v-for="(col, index) in cols"
         :ref="`col${index}`"
@@ -13,27 +25,39 @@
       >
         <div
           v-if="col.items && col.items.length"
-          class="gallery__col__image gallery__col__image--placeholder"
+          class="gallery__col__item gallery__col__item--placeholder"
           :style="{
-            height: `${col.items[0].top - gutter + 100 + (col.top || 0)}px`
+            height: `${col.items[0].top - gutter + 100 + (col.top || 0)}px`,
+            width: `${col.width}px`,
           }"
-        />
-        <img
-          v-for="image in col.items"
-          :src="image.src"
-          :key="`image-${image.src}`"
-          :style="{
-            top: `${image.top}px`,
-            transform: image.top < logoTop && `translateY(${col.top}px)`
-          }"
-          class="gallery__col__image"
         />
         <div
+          v-for="(image, imageIndex) in col.items"
+          :key="`item-${imageIndex}`"
+          class="gallery__col__item"
+          @mouseover="() => mouseOver(image, imageIndex)"
+          @mouseout="() => mouseOver({ src: undefined }, imageIndex)"
+          :style="{
+            top: `${image.top}px`,
+            width: `${image.width}px`,
+            transform: image.top < logoTop && `translateY(${col.top}px)`,
+          }"
+        >
+          <img
+            :src="image.src"
+            class="gallery__col__item__image"
+            :style="{
+              opacity: currentImageSrc && 0
+            }"
+          />
+        </div>
+        <div
           v-if="col.bottom"
-          class="gallery__col__image gallery__col__image--placeholder"
+          class="gallery__col__item gallery__col__item--placeholder"
           :style="{
             top: `${col.bottom}px`,
-            height: '200px'
+            width: `${col.width}px`,
+            height: '200px',
           }"
         />
       </div>
@@ -84,9 +108,16 @@ export default {
   data() {
     return {
       amountCols,
-      gutter: 16,
+      gutter: 20,
       cols: [],
-      logoTop: 0
+      logoTop: 0,
+      currentImageSrc: '',
+      logoArea: {
+        top: 0,
+        left: 0,
+        width: 0,
+        height: 0
+      }
     }
   },
   async mounted() {
@@ -99,8 +130,10 @@ export default {
     window.removeEventListener("resize", throttle(this.generate, 200));
   },
   methods: {
-    mouseOver(index) {
+    mouseOver(item, index) {
+      console.log(item.src)
       this.isHovering = index
+      this.currentImageSrc = item.src
     },
     async generate() {
       this.amountCols = this.calcColAmount()
@@ -127,6 +160,9 @@ export default {
       const logoHeight = logo.getBoundingClientRect().height
       this.logoTop = logo.getBoundingClientRect().top
 
+      this.logoArea.top = this.logoTop
+      this.logoArea.height = logoHeight
+
       const colImages = chunk(this.items, this.items.length / this.amountCols)
 
       const cols = await Promise.all(times(this.amountCols, async (colIndex) => {
@@ -140,13 +176,24 @@ export default {
 
         const colHitsLogo = elementsHit(colEl, logo)
 
+        if (colHitsLogo) {
+          if (!this.logoArea.width) {
+            this.logoArea.width = colElWidth
+          } else {
+            this.logoArea.width += (this.gutter + colElWidth)
+          }
+
+          if (!this.logoArea.left) {
+            this.logoArea.left = colElLeft
+          }
+        }
+
         let colTop = 0
         let colBottom = 0
         let currentTop = random(50, 70);
 
         const items = await Promise.all(
-          sampleSize(this.items, this.items.length / this.amountCols)
-          .map(async (item) => {
+          colImages[colIndex].map(async (item) => {
             const image = await getImage(item.src)
             const imgWidth = Math.floor((colElWidth / image.width) * image.width)
             const imgHeight = Math.floor((colElWidth / image.width) * image.height)
@@ -162,9 +209,9 @@ export default {
             const imageHitsBottom = imgTop + image.height > (window.innerHeight - 50)
 
             if (imageHitsLogo) {
-              imgTop = this.logoTop + logoHeight + this.gutter + random(0, 10)
+              imgTop = this.logoTop + logoHeight + this.gutter
               currentTop = imgTop
-              colTop = Math.floor(this.logoTop - imageTop - random(0, 10))
+              colTop = Math.floor(this.logoTop - imageTop)
             }
 
             if (imageHitsBottom) {
@@ -176,6 +223,7 @@ export default {
             return {
               ...item,
               top: Math.floor(imgTop),
+              width: image.width,
               hide: imageHitsLogo,
               imageHitsBottom,
             }
@@ -186,6 +234,7 @@ export default {
           items: sortBy(items, ['top', 'desc']).filter(({imageHitsBottom}) => !imageHitsBottom),
           top: colTop,
           bottom: colBottom,
+          width: colElWidth
         }
       }));
 
@@ -204,6 +253,7 @@ export default {
 }
 
 .gallery {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -223,28 +273,48 @@ export default {
   line-height: 1;
   padding: 1rem;
   z-index: 9999;
+  top: 30%;
+}
+
+.gallery__box {
+  display: block;
+  position: absolute;
+  background-color: $black;
+  box-shadow: 0 0 0 .6rem $black;
+}
+
+.gallery__overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
+  }
 }
 
 .gallery__col {
-  position: relative;
   margin-left: .5rem;
   margin-right: .5rem;
   height: 100%;
 }
 
-.gallery__col__image {
+.gallery__col__item {
   position: absolute;
   width: 100%;
   border-radius: .125rem;
-  overflow: hidden;
-  opacity: .8;
   transition: all .25s ease;
 
   &--placeholder {
-    background-color: #51557E;
-    width: 100%;
+    background-color: mix(#51557E, black, 40%);
     top: -100px;
-    opacity: .25;
   }
 
   &:not(.gallery__col__image--placeholder) {
@@ -254,5 +324,40 @@ export default {
       opacity: 1;
     }
   }
+
+  &:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    box-shadow: 0 0 0 .6rem $black;
+    z-index: 99999;
+  }
+
+  &:hover {
+    .gallery__col__item__image {
+      opacity: 0;
+    }
+  }
+}
+
+.gallery__col__item__image {
+  width: 100%;
+  transition: all .4s ease;
+}
+
+.gallery__col__image__border {
+  position: absolute;
+  display: block;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  box-shadow: 0 0 0 .5rem white;
+  z-index: 99999;
 }
 </style>
