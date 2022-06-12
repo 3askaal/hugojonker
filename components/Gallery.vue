@@ -24,7 +24,7 @@
           :key="`image-${image.src}`"
           :style="{
             top: `${image.top}px`,
-            transform: col.hitsAtIndex && image.top < col.colLogoTop && `translateY(${col.colMargin}px)`
+            transform: image.top < col.colLogoTop && `translateY(${col.colMargin}px)`
           }"
           class="gallery__col__image"
         />
@@ -44,7 +44,7 @@
 <script>
 import { random, times, sampleSize, chunk, sortBy, throttle } from 'lodash'
 
-const elementsHit = (el1, el2, colIndex) => {
+const elementsHit = (el1, el2) => {
   const el1Top = (el1.offsetTop || el1.top || 0);
   const el1Left = (el1.offsetLeft || el1.left || 0);
   const el1Bottom = (el1.offsetTop || el1.top || 0) + (el1.offsetHeight || el1.height || 0);
@@ -54,27 +54,6 @@ const elementsHit = (el1, el2, colIndex) => {
   const el2left = (el2.offsetLeft || el2.left || 0);
   const el2Bottom = (el2.offsetTop || el2.top || 0) + (el2.offsetHeight || el2.height || 0);
   const el2Right = (el2.offsetLeft || el2.left || 0) + (el2.offsetWidth || el2.width || 0);
-
-  if (colIndex === 3) {
-    console.log('IMAGE')
-    // console.log('el1Top: ', el1Top)
-    console.log('left: ', el1Left)
-    // console.log('el1Bottom: ', el1Bottom)
-    // console.log('el1Right: ', el1Right)
-
-    console.log(' ')
-
-    console.log('LOGO')
-    // console.log('el2Top: ', el2Top)
-    // console.log('el2left: ', el2left)
-    // console.log('el2Bottom: ', el2Bottom)
-    console.log('right: ', el2Right)
-    console.log('width: ', el2.offsetWidth)
-
-    console.log('=================')
-    console.log(' ')
-    console.log(' ')
-  }
 
   return !(
     (el1Bottom < el2Top) ||
@@ -161,7 +140,6 @@ export default {
 
         let colMargin = 0
         let colBottom = 0
-        let hitsAtIndex = 0
         let currentTop = random(50, 70);
 
         const items = await Promise.all(
@@ -178,17 +156,13 @@ export default {
             image.top = Math.floor(imgTop)
             image.left = Math.floor(colElLeft)
 
-            const imageHitsLogo = colHitsLogo && elementsHit(image, logo, colIndex)
+            const imageHitsLogo = colHitsLogo && elementsHit(image, logo)
             const imageHitsBottom = imgTop + image.height > (window.innerHeight - 50)
 
             if (imageHitsLogo) {
-              console.log(imageHitsLogo)
               imgTop = logoTop + logoHeight + this.gutter + random(0, 10)
               currentTop = imgTop
-
               colMargin = Math.floor(logoTop - imageTop - random(0, 10))
-
-              hitsAtIndex = index
             }
 
             if (imageHitsBottom) {
@@ -210,8 +184,7 @@ export default {
           items: sortBy(items, ['top', 'desc']).filter(({imageHitsBottom}) => !imageHitsBottom),
           colMargin,
           colLogoTop: logo.offsetTop,
-          colBottom,
-          hitsAtIndex
+          colBottom
         }
       }));
 
@@ -263,7 +236,7 @@ export default {
   width: 100%;
   border-radius: .125rem;
   overflow: hidden;
-  opacity: .5;
+  opacity: .8;
   transition: all .25s ease;
 
   &--placeholder {

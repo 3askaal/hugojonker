@@ -49,7 +49,7 @@ body {
 
 .container {
   max-width: 1200px;
-  padding: 0 2rem;
+  padding: 0 .5rem;
   display: block;
   // display: flex;
   // flex-direction: column;
