@@ -79,7 +79,7 @@
 </template>
 
 <script>
-import { random, times, sampleSize, chunk, sortBy, throttle } from 'lodash'
+import { random, times, chunk, sortBy, throttle } from 'lodash'
 
 const elementsHit = (el1, el2) => {
   const el1Top = (el1.offsetTop || el1.top || 0);
@@ -158,7 +158,7 @@ export default {
     calcColAmount() {
       const galleryWidth = this.$refs.gallery?.getBoundingClientRect().width || 0
       const imageWidth = galleryWidth < 768 ? 180 : 200
-      return Math.floor(galleryWidth / imageWidth);
+      return Math.round(galleryWidth / imageWidth);
     },
     async calcCols() {
       const gallery = this.$refs.gallery
@@ -179,7 +179,7 @@ export default {
       this.logoArea.top = this.logoTop
       this.logoArea.height = logoHeight
 
-      const colImages = chunk(this.items, this.items.length / this.amountCols)
+      const colImages = chunk(this.items, Math.round(this.items.length / this.amountCols))
 
       const cols = await Promise.all(times(this.amountCols, async (colIndex) => {
         const colRef = this.$refs[`col${colIndex}`];
@@ -206,28 +206,28 @@ export default {
 
         let colTop = 0
         let colBottom = 0
-        let currentTop = random(50, 70);
+        let currentTop = random(-100, 50);
 
         const items = await Promise.all(
           colImages[colIndex].map(async (item) => {
             const image = await getImage(item.src)
-            const imgWidth = Math.floor((colElWidth / image.width) * image.width)
-            const imgHeight = Math.floor((colElWidth / image.width) * image.height)
+            const imgWidth = Math.round((colElWidth / image.width) * image.width)
+            const imgHeight = Math.round((colElWidth / image.width) * image.height)
             let imgTop = currentTop
             const imageTop = imgTop
 
             image.width = imgWidth
             image.height = imgHeight
-            image.top = Math.floor(imgTop)
-            image.left = Math.floor(colElLeft)
+            image.top = Math.round(imgTop)
+            image.left = Math.round(colElLeft)
 
             const imageHitsLogo = colHitsLogo && elementsHit(image, logo)
-            const imageHitsBottom = imgTop + image.height > (window.innerHeight - 50)
+            const imageHitsBottom = imgTop.plus* + image.height > (window.innerHeight - 50)
 
             if (imageHitsLogo) {
               imgTop = this.logoTop + logoHeight + this.gutter
               currentTop = imgTop
-              colTop = Math.floor(this.logoTop - imageTop)
+              colTop = Math.round(this.logoTop - imageTop)
             }
 
             if (imageHitsBottom) {
@@ -238,7 +238,7 @@ export default {
 
             return {
               ...item,
-              top: Math.floor(imgTop),
+              top: Math.round(imgTop),
               width: image.width,
               hide: imageHitsLogo,
               imageHitsBottom,
