@@ -1,7 +1,18 @@
 <template>
   <div class="wrapper">
-    <div class="gallery" ref="gallery">
-      <div class="gallery__logo" ref="logo">Hugo Jonker</div>
+    <div
+      class="gallery"
+      ref="gallery"
+      :style="{
+        '--gutter': `${(gutter / 2) + 1}px`
+      }"
+    >
+      <div class="gallery__content" ref="logo">
+        <div class="gallery__content__logo">
+          Hugo Jonker
+        </div>
+        <!-- <div class="gallery__content__subtitle">Lorem ipsum dolor sit amet consectetur adipisicing elit.</div> -->
+      </div>
       <div class="gallery__overlay" v-if="currentImageSrc">
         <img :src="currentImageSrc" alt="" />
       </div>
@@ -20,7 +31,9 @@
         :key="`col-${index}`"
         class="gallery__col"
         :style="{
-          flex: `1 0 calc(${100 / amountCols}% - 1rem)`
+          flex: `1 0 calc(${100 / amountCols}% - 1rem)`,
+          marginLeft: `${gutter / 2}px`,
+          marginRight: `${gutter / 2}px`,
         }"
       >
         <div
@@ -108,7 +121,7 @@ export default {
   data() {
     return {
       amountCols,
-      gutter: 20,
+      gutter: 10,
       cols: [],
       logoTop: 0,
       currentImageSrc: '',
@@ -131,7 +144,6 @@ export default {
   },
   methods: {
     mouseOver(item, index) {
-      console.log(item.src)
       this.isHovering = index
       this.currentImageSrc = item.src
     },
@@ -148,9 +160,6 @@ export default {
       const imageWidth = galleryWidth < 768 ? 180 : 200
       return Math.floor(galleryWidth / imageWidth);
     },
-    // calcGutter() {
-    //   return
-    // },
     async calcCols() {
       const gallery = this.$refs.gallery
       const logo = this.$refs.logo
@@ -271,23 +280,37 @@ export default {
   overflow: hidden;
 }
 
-.gallery__logo {
+.gallery__content {
   position: absolute;
   align-items: center;
+  flex-direction: column;
   justify-content: center;
-  font-family: $font-logo;
-  font-size: 1.8rem;
-  line-height: 1;
-  padding: .5rem 1rem;
+  display: flex;
+  max-width: 400px;
   z-index: 9999;
-  top: 25%;
+  text-align: center;
+  padding: 1rem;
+  top: 30%;
+}
+
+.gallery__content__logo {
+  font-family: $font-logo;
+  text-transform: uppercase;
+  font-size: 1.4rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.gallery__content__subtitle {
+  font-size: .75rem;
+  margin-top: .5rem;
 }
 
 .gallery__box {
   display: block;
   position: absolute;
   background-color: $black;
-  box-shadow: 0 0 0 .6rem $black;
+  box-shadow: 0 0 0 var(--gutter) $black;
 }
 
 .gallery__overlay {
@@ -308,8 +331,6 @@ export default {
 }
 
 .gallery__col {
-  margin-left: .5rem;
-  margin-right: .5rem;
   height: 100%;
 }
 
@@ -342,7 +363,7 @@ export default {
     bottom: 0;
     width: 100%;
     height: 100%;
-    box-shadow: 0 0 0 .6rem $black;
+    box-shadow: 0 0 0 var(--gutter) $black;
     z-index: 99999;
   }
 
